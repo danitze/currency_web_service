@@ -2,30 +2,38 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"genesis/currency-web-service/database"
 	"genesis/currency-web-service/model"
+	"genesis/currency-web-service/service"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
+	"gorm.io/gorm"
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
+)
+
+const (
+	Currency     = "USD"
+	BaseCurrency = "UAH"
 )
 
 func main() {
 	loadEnv()
 	loadDatabase()
 	router := gin.Default()
-	router.GET("/currencies", getCurrencies)
+	router.GET("/currencies", getCurrency)
 	router.POST("/emails", addEmail)
 	router.Run("localhost:8080")
 }
 
 func loadDatabase() {
 	database.Connect()
-	database.Database.AutoMigrate(&model.Email{})
+	database.Database.AutoMigrate(&model.EmailModel{})
+	database.Database.AutoMigrate(&model.RateModel{})
 }
 
 func loadEnv() {
@@ -35,67 +43,42 @@ func loadEnv() {
 	}
 }
 
-func getCurrencies(c *gin.Context) {
-	client := &http.Client{
-		Timeout: 10 * time.Second,
-	}
-	req, err := http.NewRequest("GET", "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5", nil)
+func getCurrency(c *gin.Context) {
+	rateModel, err := service.GetRate(Currency, BaseCurrency)
 	if err != nil {
-		log.Printf("Failed to create request: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
-		return
-	}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			rate, err := service.FetchRate(Currency, BaseCurrency)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+				return
+			}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Printf("Failed to make request: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
-		return
-	}
-	defer closeBody(resp.Body)
-	if resp.StatusCode != http.StatusOK {
-		log.Printf("Unexpected response status: %v", resp.StatusCode)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch currency data"})
-		return
-	}
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("Failed to read response body: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
-		return
-	}
-	var privatRates []model.PrivatRateDto
-	if err := json.Unmarshal(body, &privatRates); err != nil {
-		log.Printf("Failed to unmarshal response body: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
-		return
-	}
-	var rate model.RateDto
-	for _, privatRate := range privatRates {
-		if privatRate.Currency == "USD" {
-			buy, err := strconv.ParseFloat(privatRate.Buy, 64)
+			rateModel, err := service.InsertRate(rate)
 			if err != nil {
-				log.Printf("Cannot convert to float: %v", rate.Buy)
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 				return
 			}
-			sale, err := strconv.ParseFloat(privatRate.Sale, 64)
-			if err != nil {
-				log.Printf("Cannot convert to float: %v", rate.Sale)
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
-				return
-			}
-			rate = model.RateDto{
-				Currency:     privatRate.Currency,
-				BaseCurrency: privatRate.BaseCurrency,
-				Buy:          buy,
-				Sale:         sale,
-			}
-			c.IndentedJSON(http.StatusOK, rate)
+			c.IndentedJSON(http.StatusOK, rateModel.ToRateDto())
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		}
+		return
+	}
+	if time.Now().Sub(rateModel.UpdateTime).Minutes() > 60 {
+		rate, err := service.FetchRate(Currency, BaseCurrency)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 			return
 		}
+		rateModel, err := service.UpdateRate(rate)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+			return
+		}
+		c.IndentedJSON(http.StatusOK, rateModel.ToRateDto())
+	} else {
+		c.IndentedJSON(http.StatusOK, rateModel.ToRateDto())
 	}
-	c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 }
 
 func addEmail(c *gin.Context) {
@@ -117,18 +100,11 @@ func addEmail(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Request body validation error"})
 		return
 	}
-	emailModel, err := model.Email.Save(model.Email{Content: addEmailModel.Email})
+	emailModel, err := (&model.EmailModel{Content: addEmailModel.Email}).Save()
 	if err != nil {
 		log.Printf("Failed to insert email: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
 	c.IndentedJSON(http.StatusOK, emailModel)
-}
-
-func closeBody(body io.ReadCloser) {
-	err := body.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
 }

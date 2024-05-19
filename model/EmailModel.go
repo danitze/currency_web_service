@@ -5,16 +5,20 @@ import (
 	"gorm.io/gorm"
 )
 
-type Email struct {
+type EmailModel struct {
 	gorm.Model
 	ID      uint
-	Content string `gorm:"type:text" json:"content"`
+	Content string `json:"content"`
 }
 
-func (email Email) Save() (*Email, error) {
-	err := database.Database.Create(&email).Error
+func (*EmailModel) TableName() string {
+	return "emails"
+}
+
+func (email *EmailModel) Save() (*EmailModel, error) {
+	err := database.Database.Create(email).Error
 	if err != nil {
-		return &Email{}, err
+		return &EmailModel{}, err
 	}
-	return &email, nil
+	return email, nil
 }
