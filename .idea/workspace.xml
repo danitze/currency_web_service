@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1baaa0c2-70de-4c20-92d6-c64100fe3ae1" name="Changes" comment="Fix endpoints names and logic, add sending rate to emails">
-      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/compose.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="1baaa0c2-70de-4c20-92d6-c64100fe3ae1" name="Changes" comment="Add compose files" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -93,7 +89,8 @@
     <MESSAGE value="Move models to separate folder, rename models" />
     <MESSAGE value="Implement caching rates data to database" />
     <MESSAGE value="Fix endpoints names and logic, add sending rate to emails" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix endpoints names and logic, add sending rate to emails" />
+    <MESSAGE value="Add compose files" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add compose files" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
