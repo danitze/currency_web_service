@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: currency_app
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: currency-web-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      PORT: 8080
+      DB_HOST: "db"
+      DB_USER: "root"
+      DB_PASSWORD: "root"
+      DB_NAME: "currency_app"
+      DB_PORT: "5432"
+      EMAIL_FROM: "danandryeyev@gmail.com"
+      EMAIL_PASSWORD: ""
+      EMAIL_HOST: "smtp.gmail.com"
+      EMAIL_PORT: "587"
