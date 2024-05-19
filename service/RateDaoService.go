@@ -31,10 +31,10 @@ func UpdateRate(rate *model.Rate) (*model.RateModel, error) {
 		log.Printf("Failed to update rate: %v", err)
 		return nil, err
 	}
-	return GetRate(rate.Currency, rate.BaseCurrency)
+	return GetLocalRate(rate.Currency, rate.BaseCurrency)
 }
 
-func GetRate(currency string, baseCurrency string) (*model.RateModel, error) {
+func GetLocalRate(currency string, baseCurrency string) (*model.RateModel, error) {
 	var rateModel model.RateModel
 	err := database.Database.Where("currency = ? AND base_currency = ?",
 		currency, baseCurrency).First(&rateModel).Error

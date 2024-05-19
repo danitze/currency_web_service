@@ -1,6 +1,7 @@
 package model
 
 import (
+	"genesis/currency-web-service/apperror"
 	"genesis/currency-web-service/database"
 	"gorm.io/gorm"
 )
@@ -16,7 +17,15 @@ func (*EmailModel) TableName() string {
 }
 
 func (email *EmailModel) Save() (*EmailModel, error) {
-	err := database.Database.Create(email).Error
+	var emails []EmailModel
+	err := database.Database.Where("content = ?", email.Content).Find(&emails).Error
+	if err != nil {
+		return &EmailModel{}, err
+	}
+	if len(emails) > 0 {
+		return &EmailModel{}, &apperror.DuplicateEmailError{}
+	}
+	err = database.Database.Create(email).Error
 	if err != nil {
 		return &EmailModel{}, err
 	}

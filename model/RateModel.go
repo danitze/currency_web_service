@@ -27,12 +27,3 @@ func (rate *RateModel) Save() (*RateModel, error) {
 	}
 	return rate, nil
 }
-
-func (rate *RateModel) ToRateDto() *RateDto {
-	return &RateDto{
-		Currency:     rate.Currency,
-		BaseCurrency: rate.BaseCurrency,
-		Buy:          rate.Buy,
-		Sale:         rate.Sale,
-	}
-}

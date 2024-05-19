@@ -4,14 +4,21 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1baaa0c2-70de-4c20-92d6-c64100fe3ae1" name="Changes" comment="Move models to separate folder, rename models">
-      <change afterPath="$PROJECT_DIR$/model/Rate.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/model/RateModel.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/FetchRateService.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/RateDaoService.go" afterDir="false" />
+    <list default="true" id="1baaa0c2-70de-4c20-92d6-c64100fe3ae1" name="Changes" comment="Implement caching rates data to database">
+      <change afterPath="$PROJECT_DIR$/apperror/DuplicateEmailError.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/service/EmailDaoService.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/service/EmailSendService.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/service/RateService.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env.local" beforeDir="false" afterPath="$PROJECT_DIR$/.env.local" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/model/EmailModel.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/EmailModel.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/RateDto.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/model/RateModel.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/RateModel.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/RateDaoService.go" beforeDir="false" afterPath="$PROJECT_DIR$/service/RateDaoService.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,7 +102,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Move models to separate folder, rename models" />
-    <option name="LAST_COMMIT_MESSAGE" value="Move models to separate folder, rename models" />
+    <MESSAGE value="Implement caching rates data to database" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implement caching rates data to database" />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
