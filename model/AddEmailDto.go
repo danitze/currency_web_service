@@ -1,5 +1,5 @@
 package model
 
-type AddEmailModel struct {
+type AddEmailDto struct {
 	Email string `json:"email" validate:"required"`
 }

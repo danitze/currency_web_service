@@ -14,18 +14,6 @@ import (
 	"time"
 )
 
-type Rates []struct {
-	Currency     string `json:"ccy"`
-	BaseCurrency string `json:"base_ccy"`
-	Buy          string `json:"buy"`
-	Sale         string `json:"sale"`
-}
-
-type ResultCurrency struct {
-	Buy  float64 `json:"buy"`
-	Sale float64 `json:"sale"`
-}
-
 func main() {
 	loadEnv()
 	loadDatabase()
@@ -76,32 +64,34 @@ func getCurrencies(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
-	var rates Rates
-	if err := json.Unmarshal(body, &rates); err != nil {
+	var privatRates []model.PrivatRateDto
+	if err := json.Unmarshal(body, &privatRates); err != nil {
 		log.Printf("Failed to unmarshal response body: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 		return
 	}
-	var resultCurrency ResultCurrency
-	for _, rate := range rates {
-		if rate.Currency == "USD" {
-			buy, err := strconv.ParseFloat(rate.Buy, 64)
+	var rate model.RateDto
+	for _, privatRate := range privatRates {
+		if privatRate.Currency == "USD" {
+			buy, err := strconv.ParseFloat(privatRate.Buy, 64)
 			if err != nil {
 				log.Printf("Cannot convert to float: %v", rate.Buy)
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 				return
 			}
-			sale, err := strconv.ParseFloat(rate.Sale, 64)
+			sale, err := strconv.ParseFloat(privatRate.Sale, 64)
 			if err != nil {
 				log.Printf("Cannot convert to float: %v", rate.Sale)
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
 				return
 			}
-			resultCurrency = ResultCurrency{
-				Buy:  buy,
-				Sale: sale,
+			rate = model.RateDto{
+				Currency:     privatRate.Currency,
+				BaseCurrency: privatRate.BaseCurrency,
+				Buy:          buy,
+				Sale:         sale,
 			}
-			c.IndentedJSON(http.StatusOK, resultCurrency)
+			c.IndentedJSON(http.StatusOK, rate)
 			return
 		}
 	}
@@ -109,19 +99,19 @@ func getCurrencies(c *gin.Context) {
 }
 
 func addEmail(c *gin.Context) {
-	validator := validator.New()
+	structValidator := validator.New()
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot read body"})
 		return
 	}
-	var addEmailModel model.AddEmailModel
+	var addEmailModel model.AddEmailDto
 	if err := json.Unmarshal(body, &addEmailModel); err != nil {
 		log.Printf("Failed to unmarshal request body: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Request body unmarshal error"})
 		return
 	}
-	err = validator.Struct(&addEmailModel)
+	err = structValidator.Struct(&addEmailModel)
 	if err != nil {
 		log.Printf("Failed to validate request body: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Request body validation error"})
